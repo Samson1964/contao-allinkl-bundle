@@ -321,7 +321,7 @@ final class DcaBauer
 				'label'      => array('DNS zurücksetzen', 'DNS-Einstellungen der Domain %s auf die Vorgabe von All-Inkl zurücksetzen'),
 				'href'       => 'key=dnsreset',
 				'icon'       => 'undo.svg',
-				'attributes' => 'onclick="if(!confirm(\'Alle DNS-Einträge dieser Domain werden auf die Vorgabe von All-Inkl zurückgesetzt. Eigene Einträge gehen verloren. Fortfahren?\'))return false;Backend.getScrollOffset()"',
+				'attributes' => self::nachfrage('Alle DNS-Einträge dieser Domain werden auf die Vorgabe von All-Inkl zurückgesetzt. Eigene Einträge gehen verloren. Fortfahren?'),
 			);
 		}
 
@@ -338,7 +338,7 @@ final class DcaBauer
 				'href'       => 'act=delete',
 				'icon'       => 'delete.svg',
 				'primary'    => true,
-				'attributes' => 'onclick="if(!confirm(\''.addslashes($bereich->loeschHinweis.' Wirklich löschen?').'\'))return false;Backend.getScrollOffset()"',
+				'attributes' => self::nachfrage($bereich->loeschHinweis.' Wirklich löschen?'),
 			);
 		}
 
@@ -352,16 +352,53 @@ final class DcaBauer
 					'icon'       => 'sync.svg',
 					'class'      => 'header_sync',
 					'primary'    => true,
-					'attributes' => 'onclick="Backend.getScrollOffset()"',
+					'attributes' => self::scrollPosition(),
 				),
 				'all' => array(
 					'href'       => 'act=select',
 					'class'      => 'header_edit_all',
-					'attributes' => 'onclick="Backend.getScrollOffset()" accesskey="e"',
+					'attributes' => self::scrollPosition().' accesskey="e"',
 				),
 			),
 			'operations' => $operationen,
 		);
+	}
+
+	/**
+	 * Liefert das Attribut, mit dem Contao die Scrollposition vor einem Klick merkt.
+	 *
+	 * Contao 4.13 macht das mit Backend.getScrollOffset(); in 5.7 gibt es die
+	 * Funktion noch, sie schreibt aber bei jedem Aufruf eine Abkündigung in
+	 * die Konsole, Ersatz ist der Stimulus-Controller „contao--scroll-offset“.
+	 * Erkannt wird Contao 5 an DC_Table::submit(), das es erst dort gibt.
+	 *
+	 * @return string Das HTML-Attribut
+	 */
+	public static function scrollPosition(): string
+	{
+		return method_exists(DC_Table::class, 'submit') ? 'data-action="contao--scroll-offset#store"' : 'onclick="Backend.getScrollOffset()"';
+	}
+
+	/**
+	 * Liefert die Attribute für eine Aktion mit Sicherheitsabfrage.
+	 *
+	 * Die Abfrage ist ein JavaScript-confirm() wie bei Contaos eigenen
+	 * Löschknöpfen. Eingebettete Browseransichten, die keine Dialoge zeigen,
+	 * werten confirm() als „Abbrechen“; dort geschieht beim Klick nichts.
+	 *
+	 * @param string $frage Der Text der Abfrage, ohne HTML
+	 *
+	 * @return string Die HTML-Attribute
+	 */
+	public static function nachfrage(string $frage): string
+	{
+		$text = htmlspecialchars(addslashes($frage), ENT_QUOTES, 'UTF-8');
+
+		if (method_exists(DC_Table::class, 'submit')) {
+			return 'data-action="contao--scroll-offset#store" onclick="if(!confirm(\''.$text.'\'))return false"';
+		}
+
+		return 'onclick="if(!confirm(\''.$text.'\'))return false;Backend.getScrollOffset()"';
 	}
 
 	/**

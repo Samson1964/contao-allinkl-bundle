@@ -14,3 +14,8 @@
   Modulrechte
 * Add: eigener SOAP-Aufruf ohne ext-soap, mit Flood-Sperre und Wiederholung
 * Add: KAS-Attrappe als Prüfstand
+* Add: Symbol der Menügruppe, folgt in Contao 5 dem hellen und dunklen Farbschema
+* Change: Knöpfe merken die Scrollposition in Contao 5 über den Stimulus-Controller statt über das abgekündigte
+  Backend.getScrollOffset()
+* Fix: Befunde aus dem lesenden Test an einem echten Account (Accounteinstellungen unter „settings“, lange
+  TXT-Einträge, Geheimes in verschachtelten Feldern, von der KAS verschwiegene SSL-Werte)

@@ -62,13 +62,13 @@ $GLOBALS['TL_DCA']['tl_allinkl_konto'] = array
 				'icon'       => 'sync.svg',
 				'class'      => 'header_sync',
 				'primary'    => true,
-				'attributes' => 'onclick="Backend.getScrollOffset()"',
+				'attributes' => DcaBauer::scrollPosition(),
 			),
 			'all' => array
 			(
 				'href'       => 'act=select',
 				'class'      => 'header_edit_all',
-				'attributes' => 'onclick="Backend.getScrollOffset()" accesskey="e"',
+				'attributes' => DcaBauer::scrollPosition().' accesskey="e"',
 			),
 		),
 		'operations' => array
@@ -86,7 +86,7 @@ $GLOBALS['TL_DCA']['tl_allinkl_konto'] = array
 				'href'       => 'key=abgleich',
 				'icon'       => 'sync.svg',
 				'primary'    => true,
-				'attributes' => 'onclick="Backend.getScrollOffset()"',
+				'attributes' => DcaBauer::scrollPosition(),
 			),
 			'pruefen' => array
 			(
@@ -108,7 +108,7 @@ $GLOBALS['TL_DCA']['tl_allinkl_konto'] = array
 				'href'       => 'act=delete',
 				'icon'       => 'delete.svg',
 				'primary'    => true,
-				'attributes' => 'onclick="if(!confirm(\'Der Zugang und alle hier gespiegelten Daten werden gelöscht. Bei All-Inkl bleibt alles bestehen. Fortfahren?\'))return false;Backend.getScrollOffset()"',
+				'attributes' => DcaBauer::nachfrage('Der Zugang und alle hier gespiegelten Daten werden gelöscht. Bei All-Inkl bleibt alles bestehen. Fortfahren?'),
 			),
 		),
 	),
