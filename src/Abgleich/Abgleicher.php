@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Schachbulle\ContaoAllinklBundle\Abgleich;
 
+use Schachbulle\ContaoAllinklBundle\Bereich\Abbild;
 use Schachbulle\ContaoAllinklBundle\Bereich\Bereich;
 use Schachbulle\ContaoAllinklBundle\Bereich\BereichRegister;
 use Schachbulle\ContaoAllinklBundle\Datenbank\KontoSpeicher;
@@ -93,7 +94,9 @@ class Abgleicher
 				};
 
 				$bericht->erfolg($bereich->titel, $anzahl);
-			} catch (KasFehler $fehler) {
+			} catch (\Throwable $fehler) {
+				// Auch Datenbankfehler (etwa ein unerwartet langer KAS-Wert)
+				// betreffen nur diesen Bereich; die übrigen laufen weiter
 				$bericht->fehler($bereich->titel, Fehlertext::zu($fehler));
 			}
 		}
@@ -121,7 +124,7 @@ class Abgleicher
 			return 0;
 		}
 
-		$this->spiegel->einstellungenUebernehmen($bereich, $zugang->kontoId, $zeilen[0]);
+		$this->spiegel->einstellungenUebernehmen($bereich, $zugang->kontoId, Abbild::auspacken($zeilen[0]));
 
 		return 1;
 	}

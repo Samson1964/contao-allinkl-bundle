@@ -60,11 +60,47 @@ final class Abbild
 	}
 
 	/**
+	 * Liefert die Felder, deren aktuellen Wert die KAS nicht mitteilt.
+	 *
+	 * Die KAS schickt manche Werte als null, obwohl sie gesetzt sind: Bei
+	 * Let’s-Encrypt-Zertifikaten etwa fehlen „SSL erzwingen“ und HSTS, die die
+	 * Weboberfläche des KAS sehr wohl anzeigt (am echten Account am 2026-11-03
+	 * festgestellt). Für solche Felder zeigt die Maske einen Hinweis; geändert
+	 * wird dort nur, was man ausdrücklich einträgt, weil aenderungen() gegen
+	 * einen leeren alten Wert vergleicht.
+	 *
+	 * @param Bereich              $bereich Der Bereich
+	 * @param array<string, mixed> $kas     Der zuletzt gelesene Datensatz
+	 *
+	 * @return array<int, string> Spaltennamen
+	 */
+	public static function unbekannteSpalten(Bereich $bereich, array $kas): array
+	{
+		$unbekannt = array();
+
+		foreach ($bereich->felder as $feld) {
+			if (array() === $feld->kasNamen || $feld->istGeheim()) {
+				continue;
+			}
+
+			$geliefert = array_filter($feld->kasNamen, static fn (string $name): bool => isset($kas[$name]));
+
+			if (array() === $geliefert) {
+				$unbekannt[] = $feld->spalte;
+			}
+		}
+
+		return $unbekannt;
+	}
+
+	/**
 	 * Entfernt Kennwörter und private Schlüssel aus einem KAS-Datensatz.
 	 *
 	 * Die KAS liefert bei Domains mit eigenem Zertifikat den privaten
 	 * Schlüssel mit aus, bei manchen Bereichen auch Kennwörter. Beides hat in
-	 * der Datenbank des Contao-Systems nichts verloren.
+	 * der Datenbank des Contao-Systems nichts verloren. Verschachtelte Felder
+	 * werden mit durchsucht: get_accountsettings liefert sein
+	 * „account_password“ eine Ebene tiefer unter „settings“.
 	 *
 	 * @param array<string, mixed> $kas Der Datensatz
 	 *
@@ -72,8 +108,33 @@ final class Abbild
 	 */
 	public static function bereinigen(array $kas): array
 	{
-		// „show_password“ ist nur ein Schalter, kein Kennwort
-		return array_filter($kas, static fn ($schluessel): bool => 'show_password' === $schluessel || 1 !== preg_match(self::GEHEIM, (string) $schluessel), ARRAY_FILTER_USE_KEY);
+		$sauber = array();
+
+		foreach ($kas as $schluessel => $wert) {
+			// „show_password“ ist nur ein Schalter, kein Kennwort
+			if ('show_password' !== $schluessel && 1 === preg_match(self::GEHEIM, (string) $schluessel)) {
+				continue;
+			}
+
+			$sauber[$schluessel] = \is_array($wert) ? self::bereinigen($wert) : $wert;
+		}
+
+		return $sauber;
+	}
+
+	/**
+	 * Packt einen Datensatz aus, den die KAS in ein einzelnes Unterfeld legt.
+	 *
+	 * get_accountsettings antwortet mit {"settings": {…}} statt mit den Feldern
+	 * selbst (am echten Account am 2026-11-03 festgestellt).
+	 *
+	 * @param array<string, mixed> $kas Der Datensatz
+	 *
+	 * @return array<string, mixed> Der Inhalt von „settings“, sonst unverändert
+	 */
+	public static function auspacken(array $kas): array
+	{
+		return 1 === \count($kas) && \is_array($kas['settings'] ?? null) ? $kas['settings'] : $kas;
 	}
 
 	/**

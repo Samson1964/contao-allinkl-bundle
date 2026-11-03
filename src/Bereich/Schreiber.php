@@ -184,7 +184,7 @@ class Schreiber
 		}
 
 		if ($bereich->einzeln) {
-			return $zeilen[0] ?? null;
+			return isset($zeilen[0]) ? Abbild::auspacken($zeilen[0]) : null;
 		}
 
 		foreach ($zeilen as $kas) {

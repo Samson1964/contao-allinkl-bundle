@@ -231,7 +231,10 @@ final class DcaBauer
 				$definition['inputType'] = 'text';
 				$eval['maxlength'] = 255;
 				$eval['decodeEntities'] = true;
-				$definition['sql'] = "varchar(255) NOT NULL default ''";
+
+				// Längere Werte (TXT-Einträge mit DKIM-Schlüssel) passen nicht
+				// in varchar(255); die KAS liefert sie trotzdem
+				$definition['sql'] = (int) ($feld->eval['maxlength'] ?? 255) > 255 ? 'text NULL' : "varchar(255) NOT NULL default ''";
 		}
 
 		if ('' !== $feld->vorgabe) {

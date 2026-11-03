@@ -60,6 +60,43 @@ final class AbbildTest extends TestCase
 	}
 
 	/**
+	 * Verschweigt die KAS einen Wert (null), gilt er als unbekannt, und ein
+	 * leeres Häkchen schickt nichts hinaus – „SSL erzwingen“ bleibt dann bei
+	 * All-Inkl, wie es ist. Das deutsche „j“ der KAS gilt als ja.
+	 */
+	public function testUnbekannterWertWirdNichtUeberschrieben(): void
+	{
+		$bereich = BereichRegister::bereich('domain');
+		$kas = array('domain_name' => 'a.de', 'ssl_certificate_sni_is_active' => 'j', 'ssl_certificate_sni_force_https' => null, 'ssl_certificate_sni_hsts_max_age' => null);
+		$zeile = Abbild::spaltenAusKas($bereich, $kas) + array('kas_daten' => Abbild::alsJson($kas), 'kas_schluessel' => 'a.de');
+
+		$this->assertSame('1', $zeile['ssl_aktiv']);
+		$this->assertContains('ssl_https', Abbild::unbekannteSpalten($bereich, $kas));
+		$this->assertNotContains('ssl_aktiv', Abbild::unbekannteSpalten($bereich, $kas));
+		$this->assertArrayNotHasKey('ssl', Abbild::aenderungen($bereich, $zeile, array()));
+
+		$zeile['ssl_https'] = '1';
+		$this->assertSame(array('ssl_certificate_force_https' => 'Y'), Abbild::aenderungen($bereich, $zeile, array())['ssl']);
+	}
+
+	/**
+	 * Geheimes wird auch in verschachtelten Feldern entfernt, und die
+	 * Accounteinstellungen werden aus „settings“ ausgepackt (Form der echten
+	 * KAS-Antwort, am 2026-11-03 festgestellt).
+	 */
+	public function testAccounteinstellungenVerschachtelt(): void
+	{
+		$antwort = array('settings' => array('account_login' => 'w0', 'account_password' => 'geheim', 'logage' => '30', 'logging' => 'kurz', 'show_password' => 'N'));
+
+		$this->assertArrayNotHasKey('account_password', Abbild::bereinigen($antwort)['settings']);
+
+		$spalten = Abbild::spaltenAusKas(BereichRegister::bereich('einstellungen'), Abbild::auspacken($antwort));
+		$this->assertSame('30', $spalten['logage']);
+		$this->assertSame('kurz', $spalten['logging']);
+		$this->assertSame(array('a' => 1), Abbild::auspacken(array('a' => 1)));
+	}
+
+	/**
 	 * add_domain bekommt Name und TLD getrennt, leere Angaben entfallen.
 	 */
 	public function testAnlegenParamsDomain(): void

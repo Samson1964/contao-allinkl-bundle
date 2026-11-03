@@ -32,7 +32,18 @@ Weicht ein Feldname bei einem echten Account ab, bleibt die Spalte leer. Der vol
 in der Ansicht **Anzeigen** (KAS-Rohdaten). So lässt sich die richtige Bezeichnung ablesen und in
 `src/Bereich/BereichRegister.php` nachtragen.
 
+Am 2026-11-03 an einem echten Account (11 Domains, 68 DNS-Einträge, 21 Postfächer …) lesend geprüft: Alle
+abgebildeten Felder kommen in den Antworten vor; Domainnamen, Pfade und PHP-Fassungen stimmen mit der
+KAS-Oberfläche überein.
+
 ## Besonderheiten der KAS
+
+* `get_accountsettings` antwortet mit `{"settings": {…}}`; darin steht auch `account_password`. Das Bundle packt
+  aus und entfernt Geheimes auf jeder Ebene.
+* Bei Let’s-Encrypt-Zertifikaten liefert die API für „SSL erzwingen“ und HSTS `null`, obwohl die KAS-Oberfläche den
+  Wert kennt. Die Maske weist darauf hin; ohne Häkchen wird dort nichts geändert.
+* „SSL aktiv“ kommt als deutsches `j`, andere Schalter als `Y`/`N`.
+* TXT-Einträge (DKIM) sind länger als 255 Zeichen.
 
 * Fehler kommen als SOAP-Fault mit einem Kürzel (`domain_syntax_incorrect`, `max_mail_account_reached` …), teils mit
   Tippfehlern (`unkown_action`, `subdomain_doenst_exist`). Das Bundle übersetzt sie über Muster ins Deutsche und
@@ -40,7 +51,7 @@ in der Ansicht **Anzeigen** (KAS-Rohdaten). So lässt sich die richtige Bezeichn
 * `update_mailinglist` verlangt die vollständige Konfiguration, sie geht bei jeder Änderung mit.
 * `update_directoryprotection` verlangt das Kennwort, auch wenn nur die Bezeichnung geändert wird.
 * `update_ssl` erwartet laut Dokumentation Schlüssel und Zertifikat. Ob das Umschalten von „HTTPS erzwingen“ allein
-  genügt, ist an einem echten Account noch zu prüfen.
+  genügt, ist noch nicht geprüft (bisher nur lesend getestet).
 * `add_sambauser`: Die Dokumentation nennt `samba_new_password`, ihr Beispiel `samba_password`. Beides geht hinaus.
 * Die Abwesenheitsnotiz eines Postfachs ist `N`, `Y` oder `Beginn|Ende` als Unix-Zeitstempel und wird so
   eingegeben, wie die KAS sie erwartet.

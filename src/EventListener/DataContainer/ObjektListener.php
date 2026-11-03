@@ -19,6 +19,7 @@ use Contao\StringUtil;
 use Schachbulle\ContaoAllinklBundle\Backend\Meldungen;
 use Schachbulle\ContaoAllinklBundle\Backend\Module;
 use Schachbulle\ContaoAllinklBundle\Backend\Passwortablage;
+use Schachbulle\ContaoAllinklBundle\Bereich\Abbild;
 use Schachbulle\ContaoAllinklBundle\Bereich\Bereich;
 use Schachbulle\ContaoAllinklBundle\Bereich\BereichRegister;
 use Schachbulle\ContaoAllinklBundle\Bereich\DcaBauer;
@@ -98,6 +99,7 @@ class ObjektListener
 		$neu = '' === (string) $zeile['kas_schluessel'];
 		$dca = &$GLOBALS['TL_DCA'][$bereich->tabelle];
 		$dca['palettes']['default'] = DcaBauer::palette($bereich, $neu ? 'neu' : 'bestehend');
+		$unbekannt = $neu ? array() : Abbild::unbekannteSpalten($bereich, Abbild::ausJson($zeile['kas_daten'] ?? null));
 
 		foreach ($bereich->felder as $feld) {
 			if (!isset($dca['fields'][$feld->spalte])) {
@@ -117,6 +119,12 @@ class ObjektListener
 				$definition['eval']['readonly'] = true;
 				$definition['eval']['mandatory'] = false;
 				unset($definition['options'], $definition['reference'], $definition['eval']['rgxp']);
+			}
+
+			// Die KAS verschweigt den aktuellen Wert; was die Maske zeigt, ist
+			// dann nicht der Stand bei All-Inkl
+			if (null !== $feld->aendernParam && \in_array($feld->spalte, $unbekannt, true)) {
+				$definition['label'][1] = trim(($definition['label'][1] ?? '').' Die KAS meldet den aktuellen Wert nicht – die Anzeige ist nicht der Stand bei All-Inkl. '.('janein' === $feld->art ? 'Ohne Häkchen bleibt die Einstellung unverändert, mit Häkchen wird sie eingeschaltet.' : 'Leer lassen ändert nichts.'));
 			}
 
 			unset($definition);
