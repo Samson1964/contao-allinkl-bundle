@@ -1,32 +1,36 @@
 # Quelle für die Metadaten im Contao Manager (contao/package-metadata).
 # Änderungen hier werden von Claude in den Fork übertragen.
+# Eingereicht als contao/package-metadata#848 (2026-11-03).
 
 de:
     title: All-Inkl
     description: >
-        Verwaltet ein Webhosting bei All-Inkl direkt im Backend: Domains und DNS,
-        Postfächer, Weiterleitungen, Datenbanken, FTP, Cronjobs und mehr. Die Daten
-        kommen über die offizielle Schnittstelle von All-Inkl; Änderungen gehen sofort
-        dorthin. Mit Schreibschutz für einen gefahrlosen Test.
+        Verwaltet das Hosting bei All-Inkl direkt im Backend: Domains, Postfächer, Weiterleitungen, Datenbanken,
+        Cronjobs und mehr. Die Daten kommen über die offizielle Schnittstelle von All-Inkl, Änderungen gehen sofort
+        dorthin.
+
+        Ein Schreibschutz je Zugang erlaubt gefahrloses Ausprobieren.
     keywords:
         - All-Inkl
         - KAS
         - Webhosting
         - Domains
         - DNS
+        - FTP
         - Postfächer
 
 en:
     title: All-Inkl
     description: >
-        Manages a web hosting package at All-Inkl directly in the back end: domains and
-        DNS, mailboxes, forwardings, databases, FTP, cron jobs and more. The data comes
-        from the official All-Inkl interface; changes are sent there immediately.
-        Includes a write protection for safe testing.
+        Manages hosting at All-Inkl directly in the back end: domains, mailboxes, forwards, databases, cron jobs and
+        more. The data comes from the official All-Inkl interface, and changes are sent there immediately.
+
+        A write protection per account allows safe testing.
     keywords:
         - All-Inkl
         - KAS
         - web hosting
         - domains
         - DNS
+        - FTP
         - mailboxes
