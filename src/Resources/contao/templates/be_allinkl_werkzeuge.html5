@@ -1,0 +1,123 @@
+<?php
+/*
+ * Backend-Modul „Werkzeuge“ des All-Inkl-Bundles.
+ *
+ * Variablen aus Backend\Werkzeuge::daten(): konten, konto, ansichten,
+ * ansicht, bloecke (HTML schon maskiert), jahr, monat, verzeichnis; dazu
+ * token und formular aus WerkzeugeModul.
+ */
+$adresse = static function (array $parameter): string {
+	$anfrage = \Contao\System::getContainer()->get('request_stack')->getCurrentRequest();
+	$alle = array_merge($anfrage ? $anfrage->query->all() : array(), $parameter);
+
+	return \Contao\StringUtil::specialchars('?'.http_build_query($alle));
+};
+$e = static fn ($text): string => \Contao\StringUtil::specialchars((string) $text);
+?>
+<div class="allinkl_werkzeuge">
+  <?= \Contao\Message::generate() ?>
+
+  <?php if (empty($this->konten)): ?>
+    <p class="tl_info">Es gibt keinen aktiven KAS-Zugang. Zuerst im Modul „KAS-Zugänge“ einen anlegen.</p>
+  <?php else: ?>
+    <form method="get" class="tl_form allinkl_auswahl">
+      <input type="hidden" name="do" value="allinkl_werkzeuge">
+      <input type="hidden" name="ansicht" value="<?= $e($this->ansicht) ?>">
+      <div class="tl_formbody">
+        <label for="allinkl_konto">KAS-Zugang</label>
+        <select id="allinkl_konto" name="konto" class="tl_select" onchange="this.form.submit()">
+          <?php foreach ($this->konten as $id => $titel): ?>
+            <option value="<?= (int) $id ?>"<?= (int) $id === (int) $this->konto ? ' selected' : '' ?>><?= $e($titel) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <noscript><button type="submit" class="tl_submit">Wählen</button></noscript>
+      </div>
+    </form>
+
+    <nav class="allinkl_reiter" aria-label="Ansichten">
+      <?php foreach ($this->ansichten as $name => $titel): ?>
+        <a href="<?= $adresse(array('ansicht' => $name)) ?>"<?= $name === $this->ansicht ? ' class="aktiv" aria-current="page"' : '' ?>><?= $e($titel) ?></a>
+      <?php endforeach; ?>
+    </nav>
+
+    <?php if ('verkehr' === $this->ansicht): ?>
+      <form method="get" class="tl_form allinkl_auswahl">
+        <input type="hidden" name="do" value="allinkl_werkzeuge">
+        <input type="hidden" name="ansicht" value="verkehr">
+        <input type="hidden" name="konto" value="<?= (int) $this->konto ?>">
+        <div class="tl_formbody">
+          <label for="allinkl_jahr">Jahr</label>
+          <input id="allinkl_jahr" type="number" name="jahr" value="<?= (int) $this->jahr ?>" class="tl_text" min="2000" max="2100">
+          <label for="allinkl_monat">Monat</label>
+          <input id="allinkl_monat" type="number" name="monat" value="<?= (int) $this->monat ?>" class="tl_text" min="1" max="12">
+          <button type="submit" class="tl_submit">Anzeigen</button>
+        </div>
+      </form>
+    <?php elseif ('speicher' === $this->ansicht): ?>
+      <form method="get" class="tl_form allinkl_auswahl">
+        <input type="hidden" name="do" value="allinkl_werkzeuge">
+        <input type="hidden" name="ansicht" value="speicher">
+        <input type="hidden" name="konto" value="<?= (int) $this->konto ?>">
+        <div class="tl_formbody">
+          <label for="allinkl_verzeichnis">Verzeichnis</label>
+          <input id="allinkl_verzeichnis" type="text" name="verzeichnis" value="<?= $e($this->verzeichnis) ?>" class="tl_text">
+          <button type="submit" class="tl_submit">Anzeigen</button>
+        </div>
+      </form>
+    <?php endif; ?>
+
+    <?php foreach ($this->bloecke as $block): ?>
+      <section class="allinkl_block">
+        <h2 class="sub_headline"><?= $e($block['titel']) ?></h2>
+        <?= $block['html'] ?>
+      </section>
+    <?php endforeach; ?>
+
+    <?php if ('software' === $this->ansicht): ?>
+      <form method="post" class="tl_form">
+        <input type="hidden" name="FORM_SUBMIT" value="<?= $e($this->formular) ?>">
+        <input type="hidden" name="REQUEST_TOKEN" value="<?= $e($this->token) ?>">
+        <input type="hidden" name="aktion" value="software">
+        <h2 class="sub_headline">Software installieren</h2>
+        <div class="tl_formbody_edit allinkl_felder">
+          <div class="w50 widget"><h3><label for="sw_id">Software-ID</label></h3><div><input id="sw_id" name="software_id" class="tl_text" required></div><p class="tl_help tl_tip">Aus der Spalte software_id der Liste oben.</p></div>
+          <div class="w50 widget"><h3><label for="sw_host">Hostname</label></h3><div><input id="sw_host" name="software_hostname" class="tl_text" required></div></div>
+          <div class="w50 widget"><h3><label for="sw_pfad">Pfad</label></h3><div><input id="sw_pfad" name="software_path" class="tl_text"></div></div>
+          <div class="w50 widget"><h3><label for="sw_db">Datenbank-Login</label></h3><div><input id="sw_db" name="software_database" class="tl_text"></div></div>
+          <div class="w50 widget"><h3><label for="sw_dbpw">Datenbank-Kennwort</label></h3><div><input id="sw_dbpw" type="password" name="software_database_password" class="tl_text" autocomplete="new-password"></div></div>
+          <div class="w50 widget"><h3><label for="sw_mail">Adresse für die Bestätigung</label></h3><div><input id="sw_mail" type="email" name="software_admin_mail" class="tl_text" required></div></div>
+          <div class="w50 widget"><h3><label for="sw_user">Admin-Benutzer</label></h3><div><input id="sw_user" name="software_admin_user" class="tl_text"></div></div>
+          <div class="w50 widget"><h3><label for="sw_pass">Admin-Kennwort</label></h3><div><input id="sw_pass" type="password" name="software_admin_pass" class="tl_text" autocomplete="new-password"></div></div>
+          <div class="w50 widget"><h3><label for="sw_lang">Sprache der Bestätigung</label></h3><div><select id="sw_lang" name="language" class="tl_select"><option value="de">Deutsch</option><option value="en">Englisch</option></select></div></div>
+          <div class="w50 widget m12"><div class="tl_checkbox_single_container"><input id="sw_bsp" type="checkbox" name="software_install_example_data" value="1" class="tl_checkbox"> <label for="sw_bsp">Beispieldaten installieren</label></div></div>
+        </div>
+        <div class="tl_formbody_submit"><div class="tl_submit_container"><button type="submit" class="tl_submit">Installation beauftragen</button></div></div>
+      </form>
+    <?php elseif ('dateien' === $this->ansicht): ?>
+      <form method="post" class="tl_form">
+        <input type="hidden" name="FORM_SUBMIT" value="<?= $e($this->formular) ?>">
+        <input type="hidden" name="REQUEST_TOKEN" value="<?= $e($this->token) ?>">
+        <input type="hidden" name="aktion" value="chown">
+        <h2 class="sub_headline">Besitzrechte setzen</h2>
+        <div class="tl_formbody_edit allinkl_felder">
+          <div class="w50 widget"><h3><label for="ch_pfad">Pfad</label></h3><div><input id="ch_pfad" name="chown_path" class="tl_text" required></div></div>
+          <div class="w50 widget"><h3><label for="ch_user">Neuer Besitzer</label></h3><div><input id="ch_user" name="chown_user" class="tl_text" required placeholder="phpuser oder w0123456"></div></div>
+          <div class="w50 widget m12"><div class="tl_checkbox_single_container"><input id="ch_rek" type="checkbox" name="recursive" value="1" class="tl_checkbox"> <label for="ch_rek">Auch alle Unterverzeichnisse</label></div></div>
+        </div>
+        <div class="tl_formbody_submit"><div class="tl_submit_container"><button type="submit" class="tl_submit">Besitzrechte setzen</button></div></div>
+      </form>
+
+      <form method="post" class="tl_form">
+        <input type="hidden" name="FORM_SUBMIT" value="<?= $e($this->formular) ?>">
+        <input type="hidden" name="REQUEST_TOKEN" value="<?= $e($this->token) ?>">
+        <input type="hidden" name="aktion" value="symlink">
+        <h2 class="sub_headline">Symlink anlegen</h2>
+        <div class="tl_formbody_edit allinkl_felder">
+          <div class="w50 widget"><h3><label for="sl_ziel">Ziel</label></h3><div><input id="sl_ziel" name="symlink_target" class="tl_text" required></div></div>
+          <div class="w50 widget"><h3><label for="sl_name">Name des Symlinks</label></h3><div><input id="sl_name" name="symlink_name" class="tl_text" required></div></div>
+        </div>
+        <div class="tl_formbody_submit"><div class="tl_submit_container"><button type="submit" class="tl_submit">Symlink anlegen</button></div></div>
+      </form>
+    <?php endif; ?>
+  <?php endif; ?>
+</div>

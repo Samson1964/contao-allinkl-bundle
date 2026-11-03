@@ -1,0 +1,80 @@
+# Alle Klassen unter src/ werden automatisch als Dienste registriert, damit
+# Listener, Voter und Cronjob über ihre Attribute (#[AsCallback],
+# #[AsEventListener], #[AsCronJob]) greifen. Ausgenommen sind die Klassen,
+# die Symfony bzw. der Contao Manager selbst laden, die Ressourcen, das
+# klassische Backend-Modul (erzeugt Contao mit „new“) und die reinen
+# Daten- und Rechenklassen ohne Abhängigkeiten.
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            # Alle Einträge des Bundles landen im Contao-Systemprotokoll
+            Psr\Log\LoggerInterface $protokoll: '@monolog.logger.contao.general'
+            int $hauptadmin: '%contao_allinkl.hauptadmin%'
+            string $apiAdresse: '%contao_allinkl.api_adresse%'
+            string $authAdresse: '%contao_allinkl.auth_adresse%'
+            int $zeitlimit: '%contao_allinkl.zeitlimit%'
+            # Schlüssel für die Kennwörter der KAS-Zugänge
+            string $geheimnis: '%kernel.secret%'
+
+    Schachbulle\ContaoAllinklBundle\:
+        resource: '../../'
+        exclude:
+            - '../../ContaoAllinklBundle.php'
+            - '../../ContaoManager/'
+            - '../../DependencyInjection/'
+            - '../../Resources/'
+            - '../../Abgleich/Bericht.php'
+            - '../../Backend/Module.php'
+            - '../../Backend/WerkzeugeModul.php'
+            - '../../Bereich/Abbild.php'
+            - '../../Bereich/Aufrufgruppe.php'
+            - '../../Bereich/Bereich.php'
+            - '../../Bereich/BereichRegister.php'
+            - '../../Bereich/DcaBauer.php'
+            - '../../Bereich/Eingabefehler.php'
+            - '../../Bereich/Feld.php'
+            - '../../Bereich/Legenden.php'
+            - '../../Kas/Fehlertext.php'
+            - '../../Kas/KasAntwort.php'
+            - '../../Kas/KasFehler.php'
+            - '../../Kas/Zugangsdaten.php'
+
+    # Contaos HTTP-Client, wenn die Installation einen hat; sonst baut der
+    # Transport sich selbst einen
+    Schachbulle\ContaoAllinklBundle\Kas\HttpTransport:
+        arguments:
+            $client: '@?http_client'
+
+    Schachbulle\ContaoAllinklBundle\Kas\Transport:
+        alias: Schachbulle\ContaoAllinklBundle\Kas\HttpTransport
+
+    # Die Closures für Uhr und Warten gibt es nur in den Tests
+    Schachbulle\ContaoAllinklBundle\Kas\KasClient:
+        arguments:
+            $schlafen: null
+            $uhr: null
+
+    # Öffentlich, weil DcaBauer die DCA-Callbacks als Paar aus Dienst-ID und
+    # Methode einträgt und Contao sie über System::importStatic() holt
+    Schachbulle\ContaoAllinklBundle\EventListener\DataContainer\ObjektListener:
+        public: true
+
+    # Öffentlich, weil Contao die key-Callbacks aus $GLOBALS['BE_MOD'] über
+    # System::importStatic() aus dem Container holt
+    Schachbulle\ContaoAllinklBundle\Backend\Aktionen:
+        public: true
+
+    # Öffentlich, weil das klassische Modul „Werkzeuge“ ihn über
+    # System::getContainer() holt
+    Schachbulle\ContaoAllinklBundle\Backend\Werkzeuge:
+        public: true
+
+    # Muss vor Contaos TableAccessVoter (Priorität 100) entscheiden; ohne
+    # autoconfigure, damit der Tag nicht ein zweites Mal ohne Priorität kommt
+    Schachbulle\ContaoAllinklBundle\Sicherheit\TabellenVoter:
+        autoconfigure: false
+        tags:
+            - { name: security.voter, priority: 200 }

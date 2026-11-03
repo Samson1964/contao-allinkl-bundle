@@ -1,0 +1,66 @@
+/*
+ * All-Inkl-Bundle: Darstellung des Moduls „Werkzeuge“ und der Vermerke in
+ * den Listen. Farben über Contaos eigene Klassen (tl_red, tl_gray …), damit
+ * der dunkle Modus von Contao 5 mitgeht.
+ */
+.allinkl_werkzeuge {
+	padding: 0 15px 15px;
+}
+
+.allinkl_auswahl .tl_formbody {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 12px;
+	align-items: center;
+	padding: 12px 0;
+}
+
+.allinkl_auswahl .tl_text,
+.allinkl_auswahl .tl_select {
+	width: auto;
+	min-width: 8em;
+}
+
+.allinkl_reiter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 0 0 12px;
+	border-bottom: 1px solid var(--border, #ddd);
+}
+
+.allinkl_reiter a {
+	padding: 6px 12px;
+	border: 1px solid transparent;
+	border-bottom: 0;
+	border-radius: 3px 3px 0 0;
+}
+
+.allinkl_reiter a.aktiv {
+	border-color: var(--border, #ddd);
+	background: var(--panel-bg, #f6f6f6);
+	font-weight: 600;
+}
+
+.allinkl_block {
+	margin: 0 0 18px;
+	overflow-x: auto;
+}
+
+.allinkl_tabelle {
+	width: 100%;
+}
+
+.allinkl_tabelle td,
+.allinkl_tabelle th {
+	vertical-align: top;
+	word-break: break-word;
+}
+
+.allinkl_tabelle .allinkl_tabelle {
+	margin: 0;
+}
+
+.allinkl_felder {
+	display: flow-root;
+}
